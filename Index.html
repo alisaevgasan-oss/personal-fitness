@@ -1,0 +1,363 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#10151f">
+<title>Personal Fitness</title>
+<style>
+:root {
+  --bg:#10151f; --panel:#1a2230; --panel2:#222d3e;
+  --text:#f3f5f8; --muted:#9ba8ba; --accent:#8be0b0;
+  --line:#303b4c; --red:#ff7777;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:Arial,sans-serif;padding-bottom:85px}
+header{padding:25px 18px 16px;background:#151d29}
+header small{color:var(--accent);letter-spacing:2px;font-weight:bold}
+h1{font-size:25px;margin:8px 0}
+h2{font-size:19px;margin:0 0 14px}
+h3{font-size:15px;margin:0 0 8px}
+p{color:var(--muted);line-height:1.5}
+main{padding:16px;max-width:650px;margin:auto}
+.page{display:none}.page.active{display:block}
+.card{background:var(--panel);border:1px solid var(--line);
+  border-radius:16px;padding:16px;margin-bottom:13px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--panel2);border-radius:12px;padding:13px}
+.stat strong{display:block;font-size:23px;margin-top:7px}
+.muted{color:var(--muted);font-size:12px}
+.accent{color:var(--accent)}
+button{border:0;border-radius:10px;padding:12px 15px;
+  background:var(--accent);color:#102019;font-weight:bold;
+  font-size:14px;cursor:pointer}
+button.secondary{background:var(--panel2);color:var(--text);
+  border:1px solid var(--line)}
+button.danger{background:#512c35;color:#ffd9de}
+button.small{padding:8px 10px;font-size:12px}
+input,select,textarea{width:100%;padding:12px;margin:6px 0 12px;
+  border-radius:9px;border:1px solid var(--line);
+  background:#111925;color:var(--text);font-size:15px}
+label{font-size:13px;color:var(--muted)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.progress{height:8px;background:#303b4c;border-radius:10px;overflow:hidden;margin:9px 0}
+.progress span{display:block;height:100%;background:var(--accent);width:0}
+nav{position:fixed;bottom:0;left:0;right:0;background:#151d29;
+  border-top:1px solid var(--line);display:flex;justify-content:space-around;
+  padding:8px 2px calc(8px + env(safe-area-inset-bottom));z-index:5}
+nav button{background:none;color:var(--muted);padding:7px 3px;
+  font-size:10px;flex:1}
+nav button.active{color:var(--accent)}
+.exercise{padding:12px 0;border-bottom:1px solid var(--line)}
+.exercise:last-child{border:0}
+.exercise input{width:65px;display:inline-block;margin:4px}
+.meal{padding:11px 0;border-bottom:1px solid var(--line)}
+.meal:last-child{border:0}
+canvas{width:100%;height:190px;background:#111925;border-radius:10px}
+.photo{width:100%;border-radius:10px;margin-top:8px}
+.check{display:flex;align-items:center;gap:10px;padding:9px 0}
+.check input{width:auto;margin:0}
+</style>
+</head>
+<body>
+<header>
+  <small>PERSONAL FITNESS / 2026</small>
+  <h1>Твоя система тренировок</h1>
+  <div class="muted">План • Питание • Прогресс</div>
+</header>
+
+<main>
+<section class="page active" id="home">
+  <div class="card">
+    <div class="row"><h2>Текущие показатели</h2><span class="accent">Цель: атлетичное тело</span></div>
+    <div class="grid">
+      <div class="stat"><span class="muted">Вес</span><strong id="homeWeight">72 кг</strong></div>
+      <div class="stat"><span class="muted">Талия</span><strong id="homeWaist">90 см</strong></div>
+      <div class="stat"><span class="muted">Калории</span><strong>2100</strong></div>
+      <div class="stat"><span class="muted">Белок</span><strong>140 г</strong></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Дневные ориентиры</h2>
+    <div class="row"><span>Белки</span><b>140 г</b></div>
+    <div class="progress"><span style="width:100%"></span></div>
+    <div class="row"><span>Жиры</span><b>65 г</b></div>
+    <div class="progress"><span style="width:100%"></span></div>
+    <div class="row"><span>Углеводы</span><b>239 г</b></div>
+    <div class="progress"><span style="width:100%"></span></div>
+    <p>Ориентир — около 2100 ккал в сутки. Свинина исключена.</p>
+  </div>
+  <div class="card">
+    <h2>Расписание тренировок</h2>
+    <p>Понедельник — тренировка A</p>
+    <p>Среда — тренировка B</p>
+    <p>Пятница — тренировка C</p>
+    <p>Время: 17:00 · Продолжительность: 60–75 минут</p>
+  </div>
+  <div class="card">
+    <h2>Быстрый переход</h2>
+    <div class="grid">
+      <button onclick="showPage('training')">Тренировки</button>
+      <button onclick="showPage('food')">Питание</button>
+      <button class="secondary" onclick="showPage('progress')">Мой прогресс</button>
+      <button class="secondary" onclick="showPage('body')">Параметры тела</button>
+    </div>
+  </div>
+</section>
+
+<section class="page" id="training">
+  <div class="card">
+    <h2>Тренировочная программа</h2>
+    <p>Три занятия в неделю. Выбери тренировку.</p>
+    <div class="grid">
+      <button onclick="loadWorkout('A')">Тренировка A</button>
+      <button onclick="loadWorkout('B')">Тренировка B</button>
+      <button onclick="loadWorkout('C')">Тренировка C</button>
+      <button class="secondary" onclick="showPage('history')">История</button>
+    </div>
+  </div>
+  <div class="card" id="workoutBox">
+    <h2>Выбери тренировку A, B или C</h2>
+  </div>
+</section>
+
+<section class="page" id="food">
+  <div class="card">
+    <h2>Питание на день</h2>
+    <p>Цель: 2100 ккал · 140 г белка · 65 г жиров · 239 г углеводов</p>
+    <div id="meals"></div>
+  </div>
+  <div class="card">
+    <h2>Учёт питания</h2>
+    <label>Сколько калорий съедено сегодня</label>
+    <input id="calories" type="number" placeholder="Например, 1850">
+    <label>Белок, граммы</label>
+    <input id="protein" type="number" placeholder="Например, 125">
+    <label>Жиры, граммы</label>
+    <input id="fat" type="number" placeholder="Например, 60">
+    <label>Углеводы, граммы</label>
+    <input id="carbs" type="number" placeholder="Например, 210">
+    <button onclick="saveFood()">Сохранить показатели</button>
+    <p id="foodStatus"></p>
+  </div>
+</section>
+
+<section class="page" id="progress">
+  <div class="card">
+    <h2>Динамика веса</h2>
+    <canvas id="chart" width="600" height="240"></canvas>
+    <p class="muted">График строится по сохранённым измерениям.</p>
+  </div>
+  <div class="card">
+    <h2>Добавить измерение</h2>
+    <label>Вес, кг</label>
+    <input id="weight" type="number" step="0.1" placeholder="72">
+    <label>Талия, см</label>
+    <input id="waist" type="number" step="0.1" placeholder="90">
+    <button onclick="saveMeasurement()">Сохранить измерение</button>
+  </div>
+  <div class="card">
+    <h2>История измерений</h2>
+    <div id="measurements"></div>
+  </div>
+</section>
+
+<section class="page" id="body">
+  <div class="card">
+    <h2>Параметры тела</h2>
+    <p>Исходные данные программы</p>
+    <div class="grid">
+      <div class="stat"><span class="muted">Возраст</span><strong>30 лет</strong></div>
+      <div class="stat"><span class="muted">Рост</span><strong>170 см</strong></div>
+      <div class="stat"><span class="muted">Вес</span><strong id="bodyWeight">72 кг</strong></div>
+      <div class="stat"><span class="muted">Талия</span><strong id="bodyWaist">90 см</strong></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Фотодневник</h2>
+    <p>Добавляй фотографии для сравнения изменений тела.</p>
+    <input type="file" id="photoInput" accept="image/*">
+    <button onclick="savePhoto()">Добавить фотографию</button>
+    <div id="photos"></div>
+  </div>
+</section>
+
+<section class="page" id="shopping">
+  <div class="card">
+    <h2>Список покупок</h2>
+    <p>Отмечай продукты, которые уже купил.</p>
+    <div id="shoppingList"></div>
+    <label>Добавить продукт</label>
+    <input id="newProduct" placeholder="Название продукта">
+    <button onclick="addProduct()">Добавить</button>
+  </div>
+</section>
+
+<section class="page" id="history">
+  <div class="card">
+    <h2>История тренировок</h2>
+    <div id="workoutHistory"></div>
+  </div>
+</section>
+
+<section class="page" id="settings">
+  <div class="card">
+    <h2>Данные приложения</h2>
+    <p>Информация хранится локально в браузере этого устройства.</p>
+    <button onclick="exportData()">Экспортировать данные</button>
+    <p></p>
+    <button class="danger" onclick="clearData()">Удалить все данные</button>
+  </div>
+</section>
+</main>
+
+<nav>
+  <button class="active" onclick="showPage('home',this)">⌂<br>Главная</button>
+  <button onclick="showPage('training',this)">🏋<br>Зал</button>
+  <button onclick="showPage('food',this)">🍎<br>Питание</button>
+  <button onclick="showPage('progress',this)">📈<br>Прогресс</button>
+  <button onclick="showPage('shopping',this)">🛒<br>Покупки</button>
+  <button onclick="showPage('settings',this)">⚙<br>Ещё</button>
+</nav>
+
+<script>
+const KEY='personalFitnessDataV1';
+let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
+  measurements:[{date:new Date().toLocaleDateString('ru-RU'),weight:72,waist:90}],
+  workouts:[],photos:[],shopping:[
+    'Курица','Индейка','Постная говядина','Рыба','Яйца',
+    'Творог постный','Йогурт Teos','Овсянка','Рис','Гречка',
+    'Картофель','Овощи','Фрукты'
+  ],food:{}
+};
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  refresh();
+}
+const plans={
+ A:[
+ ['Жим гантелей лёжа','3 × 8–12'],['Тяга горизонтального блока','3 × 10–12'],
+ ['Жим ногами','3 × 10–12'],['Сгибание ног сидя','2 × 12–15'],
+ ['Подъём гантелей в стороны','2 × 12–15'],['Планка','3 × 30–45 сек']
+ ],
+ B:[
+ ['Тяга верхнего блока','3 × 8–12'],['Румынская тяга с гантелями','3 × 8–10'],
+ ['Жим гантелей сидя','2 × 8–12'],['Жим от груди в тренажёре','2 × 10–12'],
+ ['Face pull','2 × 12–15'],['Сгибание рук на бицепс','2 × 10–12'],
+ ['Скручивания на блоке','2 × 12–15']
+ ],
+ C:[
+ ['Жим гантелей на наклонной скамье','3 × 8–12'],
+ ['Тяга с упором грудью','3 × 10–12'],['Гоблет-присед','3 × 10–12'],
+ ['Ягодичный мост','2 × 10–12'],['Подъём руки в сторону на блоке','2 × 12–15'],
+ ['Разгибание рук на блоке','2 × 10–15'],['Подъём на носки','3 × 12–15']
+ ]
+};
+function loadWorkout(letter){
+ let items=plans[letter];
+ document.getElementById('workoutBox').innerHTML=
+ `<h2>Тренировка ${letter}</h2><p>Отмечай выполнение упражнений.</p>`+
+ items.map((x,i)=>`<div class="exercise">
+ <div class="row"><b>${i+1}. ${x[0]}</b><span class="accent">${x[1]}</span></div>
+ <label>Рабочий вес (кг)</label><input type="number" id="w${i}" placeholder="кг">
+ <label><input type="checkbox" id="done${i}" style="width:auto"> Выполнено</label>
+ </div>`).join('')+
+ `<button onclick="finishWorkout('${letter}')">Завершить тренировку</button>`;
+}
+function finishWorkout(letter){
+ let result={date:new Date().toLocaleString('ru-RU'),name:letter,items:[]};
+ plans[letter].forEach((x,i)=>{
+ result.items.push({exercise:x[0],weight:document.getElementById('w'+i).value,
+ done:document.getElementById('done'+i).checked});
+ });
+ data.workouts.unshift(result);save();refresh();
+ alert('Тренировка сохранена');
+}
+const meals=[
+ ['1. Первый приём','Овсянка, Skyr, ягоды, яйцо'],
+ ['2. Второй приём','Яйца, цельнозерновой хлеб, овощи'],
+ ['3. Обед','Курица или говядина, рис или гречка, овощи'],
+ ['4. Перекус','Постный творог, фрукт, немного орехов'],
+ ['5. Ужин','Рыба или индейка, картофель, салат']
+];
+function saveFood(){
+ data.food[new Date().toLocaleDateString('ru-RU)')]={
+ calories:val('calories'),protein:val('protein'),fat:val('fat'),carbs:val('carbs')
+ };
+ save();document.getElementById('foodStatus').textContent='Показатели сохранены.';
+}
+function val(id){return document.getElementById(id).value}
+function saveMeasurement(){
+ let weight=Number(val('weight')),waist=Number(val('waist'));
+ if(!weight||!waist){alert('Заполни вес и талию');return}
+ data.measurements.push({date:new Date().toLocaleDateString('ru-RU'),weight,waist});
+ save();refresh();
+}
+function addProduct(){
+ let p=val('newProduct').trim();if(!p)return;
+ data.shopping.push(p);save();document.getElementById('newProduct').value='';refresh();
+}
+function toggleProduct(i,checked){data.shopping[i]={name:typeof data.shopping[i]==='string'?data.shopping[i]:data.shopping[i].name,done:checked};save()}
+function savePhoto(){
+ let file=document.getElementById('photoInput').files[0];if(!file)return alert('Сначала выбери фотографию');
+ let reader=new FileReader();
+ reader.onload=()=>{let img=new Image();img.onload=()=>{
+ let c=document.createElement('canvas');let scale=Math.min(1,900/img.width);
+ c.width=img.width*scale;c.height=img.height*scale;
+ c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+ data.photos.unshift({date:new Date().toLocaleDateString('ru-RU'),src:c.toDataURL('image/jpeg',.65)});
+ save();refresh();
+ };img.src=reader.result};reader.readAsDataURL(file);
+}
+function exportData(){
+ let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+ let a=document.createElement('a');a.href=URL.createObjectURL(blob);
+ a.download='personal-fitness-backup.json';a.click();URL.revokeObjectURL(a.href);
+}
+function clearData(){
+ if(confirm('Точно удалить все сохранённые данные?')){
+ localStorage.removeItem(KEY);location.reload();
+ }
+}
+function refresh(){
+ let m=data.measurements[data.measurements.length-1];
+ ['homeWeight','bodyWeight'].forEach(id=>document.getElementById(id).textContent=m.weight+' кг');
+ ['homeWaist','bodyWaist'].forEach(id=>document.getElementById(id).textContent=m.waist+' см');
+ document.getElementById('meals').innerHTML=meals.map(x=>
+ `<div class="meal"><b>${x[0]}</b><p>${x[1]}</p></div>`).join('');
+ document.getElementById('measurements').innerHTML=data.measurements.slice().reverse().map(x=>
+ `<p>${x.date} — <b>${x.weight} кг</b> · талия ${x.waist} см</p>`).join('');
+ document.getElementById('workoutHistory').innerHTML=data.workouts.map(x=>
+ `<div class="meal"><b>${x.date} — тренировка ${x.name}</b><p>${x.items.filter(i=>i.done).length} из ${x.items.length} упражнений выполнено</p></div>`).join('')||'<p>Пока нет тренировок.</p>';
+ document.getElementById('shoppingList').innerHTML=data.shopping.map((x,i)=>{
+ let name=typeof x==='string'?x:x.name,done=typeof x==='string'?false:x.done;
+ return `<div class="check"><input type="checkbox" ${done?'checked':''} onchange="toggleProduct(${i},this.checked)"><span>${name}</span></div>`;
+ }).join('');
+ document.getElementById('photos').innerHTML=data.photos.map(x=>
+ `<div class="meal"><p>${x.date}</p><img class="photo" src="${x.src}"></div>`).join('');
+ drawChart();
+}
+function drawChart(){
+ let c=document.getElementById('chart'),ctx=c.getContext('2d');
+ ctx.clearRect(0,0,c.width,c.height);
+ let arr=data.measurements;if(!arr.length)return;
+ let vals=arr.map(x=>x.weight),min=Math.min(...vals)-1,max=Math.max(...vals)+1;
+ ctx.strokeStyle='#8be0b0';ctx.lineWidth=4;ctx.beginPath();
+ vals.forEach((v,i)=>{
+ let x=35+(arr.length===1?0:i*(530/(arr.length-1)));
+ let y=205-(v-min)/(max-min)*165;
+ if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+ ctx.fillStyle='#f3f5f8';ctx.fillText(v+' кг',x-12,y-12);
+ });
+ ctx.stroke();
+}
+refresh();
+</script>
+</body>
+</html>
