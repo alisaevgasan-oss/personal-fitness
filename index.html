@@ -22,7 +22,8 @@ h2{font-size:19px;margin:0 0 14px}
 h3{font-size:15px;margin:0 0 8px}
 p{color:var(--muted);line-height:1.5}
 main{padding:16px;max-width:650px;margin:auto}
-.page{display:none}.page.active{display:block}
+.page{display:none}
+.page.active{display:block}
 .card{background:var(--panel);border:1px solid var(--line);
   border-radius:16px;padding:16px;margin-bottom:13px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -62,6 +63,7 @@ canvas{width:100%;height:190px;background:#111925;border-radius:10px}
 </style>
 </head>
 <body>
+
 <header>
   <small>PERSONAL FITNESS / 2026</small>
   <h1>Твоя система тренировок</h1>
@@ -69,6 +71,7 @@ canvas{width:100%;height:190px;background:#111925;border-radius:10px}
 </header>
 
 <main>
+
 <section class="page active" id="home">
   <div class="card">
     <div class="row"><h2>Текущие показатели</h2><span class="accent">Цель: атлетичное тело</span></div>
@@ -79,6 +82,7 @@ canvas{width:100%;height:190px;background:#111925;border-radius:10px}
       <div class="stat"><span class="muted">Белок</span><strong>140 г</strong></div>
     </div>
   </div>
+
   <div class="card">
     <h2>Дневные ориентиры</h2>
     <div class="row"><span>Белки</span><b>140 г</b></div>
@@ -89,6 +93,7 @@ canvas{width:100%;height:190px;background:#111925;border-radius:10px}
     <div class="progress"><span style="width:100%"></span></div>
     <p>Ориентир — около 2100 ккал в сутки. Свинина исключена.</p>
   </div>
+
   <div class="card">
     <h2>Расписание тренировок</h2>
     <p>Понедельник — тренировка A</p>
@@ -96,6 +101,7 @@ canvas{width:100%;height:190px;background:#111925;border-radius:10px}
     <p>Пятница — тренировка C</p>
     <p>Время: 17:00 · Продолжительность: 60–75 минут</p>
   </div>
+
   <div class="card">
     <h2>Быстрый переход</h2>
     <div class="grid">
@@ -129,6 +135,7 @@ canvas{width:100%;height:190px;background:#111925;border-radius:10px}
     <p>Цель: 2100 ккал · 140 г белка · 65 г жиров · 239 г углеводов</p>
     <div id="meals"></div>
   </div>
+
   <div class="card">
     <h2>Учёт питания</h2>
     <label>Сколько калорий съедено сегодня</label>
@@ -150,6 +157,7 @@ canvas{width:100%;height:190px;background:#111925;border-radius:10px}
     <canvas id="chart" width="600" height="240"></canvas>
     <p class="muted">График строится по сохранённым измерениям.</p>
   </div>
+
   <div class="card">
     <h2>Добавить измерение</h2>
     <label>Вес, кг</label>
@@ -158,6 +166,7 @@ canvas{width:100%;height:190px;background:#111925;border-radius:10px}
     <input id="waist" type="number" step="0.1" placeholder="90">
     <button onclick="saveMeasurement()">Сохранить измерение</button>
   </div>
+
   <div class="card">
     <h2>История измерений</h2>
     <div id="measurements"></div>
@@ -175,6 +184,7 @@ canvas{width:100%;height:190px;background:#111925;border-radius:10px}
       <div class="stat"><span class="muted">Талия</span><strong id="bodyWaist">90 см</strong></div>
     </div>
   </div>
+
   <div class="card">
     <h2>Фотодневник</h2>
     <p>Добавляй фотографии для сравнения изменений тела.</p>
@@ -211,6 +221,7 @@ canvas{width:100%;height:190px;background:#111925;border-radius:10px}
     <button class="danger" onclick="clearData()">Удалить все данные</button>
   </div>
 </section>
+
 </main>
 
 <nav>
@@ -224,140 +235,327 @@ canvas{width:100%;height:190px;background:#111925;border-radius:10px}
 
 <script>
 const KEY='personalFitnessDataV1';
+
 let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
-  measurements:[{date:new Date().toLocaleDateString('ru-RU'),weight:72,waist:90}],
-  workouts:[],photos:[],shopping:[
+  measurements:[{
+    date:new Date().toLocaleDateString('ru-RU'),
+    weight:72,
+    waist:90
+  }],
+  workouts:[],
+  photos:[],
+  shopping:[
     'Курица','Индейка','Постная говядина','Рыба','Яйца',
     'Творог постный','Йогурт Teos','Овсянка','Рис','Гречка',
     'Картофель','Овощи','Фрукты'
-  ],food:{}
+  ],
+  food:{}
 };
-function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+
+function save(){
+  localStorage.setItem(KEY,JSON.stringify(data));
+}
+
 function showPage(id,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-  if(btn)btn.classList.add('active');
+
+  if(btn){
+    btn.classList.add('active');
+  } else {
+    const navButton=[...document.querySelectorAll('nav button')]
+      .find(b=>b.getAttribute('onclick').includes("'" + id + "'"));
+    if(navButton)navButton.classList.add('active');
+  }
+
   refresh();
 }
+
 const plans={
  A:[
- ['Жим гантелей лёжа','3 × 8–12'],['Тяга горизонтального блока','3 × 10–12'],
- ['Жим ногами','3 × 10–12'],['Сгибание ног сидя','2 × 12–15'],
- ['Подъём гантелей в стороны','2 × 12–15'],['Планка','3 × 30–45 сек']
+  ['Жим гантелей лёжа','3 × 8–12'],
+  ['Тяга горизонтального блока','3 × 10–12'],
+  ['Жим ногами','3 × 10–12'],
+  ['Сгибание ног сидя','2 × 12–15'],
+  ['Подъём гантелей в стороны','2 × 12–15'],
+  ['Планка','3 × 30–45 сек']
  ],
  B:[
- ['Тяга верхнего блока','3 × 8–12'],['Румынская тяга с гантелями','3 × 8–10'],
- ['Жим гантелей сидя','2 × 8–12'],['Жим от груди в тренажёре','2 × 10–12'],
- ['Face pull','2 × 12–15'],['Сгибание рук на бицепс','2 × 10–12'],
- ['Скручивания на блоке','2 × 12–15']
+  ['Тяга верхнего блока','3 × 8–12'],
+  ['Румынская тяга с гантелями','3 × 8–10'],
+  ['Жим гантелей сидя','2 × 8–12'],
+  ['Жим от груди в тренажёре','2 × 10–12'],
+  ['Face pull','2 × 12–15'],
+  ['Сгибание рук на бицепс','2 × 10–12'],
+  ['Скручивания на блоке','2 × 12–15']
  ],
  C:[
- ['Жим гантелей на наклонной скамье','3 × 8–12'],
- ['Тяга с упором грудью','3 × 10–12'],['Гоблет-присед','3 × 10–12'],
- ['Ягодичный мост','2 × 10–12'],['Подъём руки в сторону на блоке','2 × 12–15'],
- ['Разгибание рук на блоке','2 × 10–15'],['Подъём на носки','3 × 12–15']
+  ['Жим гантелей на наклонной скамье','3 × 8–12'],
+  ['Тяга с упором грудью','3 × 10–12'],
+  ['Гоблет-присед','3 × 10–12'],
+  ['Ягодичный мост','2 × 10–12'],
+  ['Подъём руки в сторону на блоке','2 × 12–15'],
+  ['Разгибание рук на блоке','2 × 10–15'],
+  ['Подъём на носки','3 × 12–15']
  ]
 };
+
 function loadWorkout(letter){
- let items=plans[letter];
- document.getElementById('workoutBox').innerHTML=
- `<h2>Тренировка ${letter}</h2><p>Отмечай выполнение упражнений.</p>`+
- items.map((x,i)=>`<div class="exercise">
- <div class="row"><b>${i+1}. ${x[0]}</b><span class="accent">${x[1]}</span></div>
- <label>Рабочий вес (кг)</label><input type="number" id="w${i}" placeholder="кг">
- <label><input type="checkbox" id="done${i}" style="width:auto"> Выполнено</label>
- </div>`).join('')+
- `<button onclick="finishWorkout('${letter}')">Завершить тренировку</button>`;
+  let items=plans[letter];
+
+  document.getElementById('workoutBox').innerHTML=
+    `<h2>Тренировка ${letter}</h2><p>Отмечай выполнение упражнений.</p>`+
+    items.map((x,i)=>`
+      <div class="exercise">
+        <div class="row">
+          <b>${i+1}. ${x[0]}</b>
+          <span class="accent">${x[1]}</span>
+        </div>
+        <label>Рабочий вес (кг)</label>
+        <input type="number" id="w${i}" placeholder="кг">
+        <label>
+          <input type="checkbox" id="done${i}" style="width:auto">
+          Выполнено
+        </label>
+      </div>
+    `).join('')+
+    `<button onclick="finishWorkout('${letter}')">Завершить тренировку</button>`;
 }
+
 function finishWorkout(letter){
- let result={date:new Date().toLocaleString('ru-RU'),name:letter,items:[]};
- plans[letter].forEach((x,i)=>{
- result.items.push({exercise:x[0],weight:document.getElementById('w'+i).value,
- done:document.getElementById('done'+i).checked});
- });
- data.workouts.unshift(result);save();refresh();
- alert('Тренировка сохранена');
+  let result={
+    date:new Date().toLocaleString('ru-RU'),
+    name:letter,
+    items:[]
+  };
+
+  plans[letter].forEach((x,i)=>{
+    result.items.push({
+      exercise:x[0],
+      weight:document.getElementById('w'+i).value,
+      done:document.getElementById('done'+i).checked
+    });
+  });
+
+  data.workouts.unshift(result);
+  save();
+  refresh();
+  alert('Тренировка сохранена');
 }
+
 const meals=[
- ['1. Первый приём','Овсянка, Skyr, ягоды, яйцо'],
- ['2. Второй приём','Яйца, цельнозерновой хлеб, овощи'],
- ['3. Обед','Курица или говядина, рис или гречка, овощи'],
- ['4. Перекус','Постный творог, фрукт, немного орехов'],
- ['5. Ужин','Рыба или индейка, картофель, салат']
+  ['1. Первый приём','Овсянка, Skyr, ягоды, яйцо'],
+  ['2. Второй приём','Яйца, цельнозерновой хлеб, овощи'],
+  ['3. Обед','Курица или говядина, рис или гречка, овощи'],
+  ['4. Перекус','Постный творог, фрукт, немного орехов'],
+  ['5. Ужин','Рыба или индейка, картофель, салат']
 ];
+
 function saveFood(){
- data.food[new Date().toLocaleDateString('ru-RU)')]={
- calories:val('calories'),protein:val('protein'),fat:val('fat'),carbs:val('carbs')
- };
- save();document.getElementById('foodStatus').textContent='Показатели сохранены.';
+  data.food[new Date().toLocaleDateString('ru-RU')]={
+    calories:val('calories'),
+    protein:val('protein'),
+    fat:val('fat'),
+    carbs:val('carbs')
+  };
+
+  save();
+  document.getElementById('foodStatus').textContent='Показатели сохранены.';
 }
-function val(id){return document.getElementById(id).value}
+
+function val(id){
+  return document.getElementById(id).value;
+}
+
 function saveMeasurement(){
- let weight=Number(val('weight')),waist=Number(val('waist'));
- if(!weight||!waist){alert('Заполни вес и талию');return}
- data.measurements.push({date:new Date().toLocaleDateString('ru-RU'),weight,waist});
- save();refresh();
+  let weight=Number(val('weight'));
+  let waist=Number(val('waist'));
+
+  if(!weight||!waist){
+    alert('Заполни вес и талию');
+    return;
+  }
+
+  data.measurements.push({
+    date:new Date().toLocaleDateString('ru-RU'),
+    weight,
+    waist
+  });
+
+  save();
+  refresh();
 }
+
 function addProduct(){
- let p=val('newProduct').trim();if(!p)return;
- data.shopping.push(p);save();document.getElementById('newProduct').value='';refresh();
+  let p=val('newProduct').trim();
+  if(!p)return;
+
+  data.shopping.push(p);
+  save();
+  document.getElementById('newProduct').value='';
+  refresh();
 }
-function toggleProduct(i,checked){data.shopping[i]={name:typeof data.shopping[i]==='string'?data.shopping[i]:data.shopping[i].name,done:checked};save()}
+
+function toggleProduct(i,checked){
+  data.shopping[i]={
+    name:typeof data.shopping[i]==='string'
+      ?data.shopping[i]
+      :data.shopping[i].name,
+    done:checked
+  };
+
+  save();
+}
+
 function savePhoto(){
- let file=document.getElementById('photoInput').files[0];if(!file)return alert('Сначала выбери фотографию');
- let reader=new FileReader();
- reader.onload=()=>{let img=new Image();img.onload=()=>{
- let c=document.createElement('canvas');let scale=Math.min(1,900/img.width);
- c.width=img.width*scale;c.height=img.height*scale;
- c.getContext('2d').drawImage(img,0,0,c.width,c.height);
- data.photos.unshift({date:new Date().toLocaleDateString('ru-RU'),src:c.toDataURL('image/jpeg',.65)});
- save();refresh();
- };img.src=reader.result};reader.readAsDataURL(file);
+  let file=document.getElementById('photoInput').files[0];
+
+  if(!file){
+    alert('Сначала выбери фотографию');
+    return;
+  }
+
+  let reader=new FileReader();
+
+  reader.onload=()=>{
+    let img=new Image();
+
+    img.onload=()=>{
+      let c=document.createElement('canvas');
+      let scale=Math.min(1,900/img.width);
+
+      c.width=img.width*scale;
+      c.height=img.height*scale;
+
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+
+      data.photos.unshift({
+        date:new Date().toLocaleDateString('ru-RU'),
+        src:c.toDataURL('image/jpeg',.65)
+      });
+
+      save();
+      refresh();
+    };
+
+    img.src=reader.result;
+  };
+
+  reader.readAsDataURL(file);
 }
+
 function exportData(){
- let blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
- let a=document.createElement('a');a.href=URL.createObjectURL(blob);
- a.download='personal-fitness-backup.json';a.click();URL.revokeObjectURL(a.href);
+  let blob=new Blob(
+    [JSON.stringify(data,null,2)],
+    {type:'application/json'}
+  );
+
+  let a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='personal-fitness-backup.json';
+  a.click();
+
+  URL.revokeObjectURL(a.href);
 }
+
 function clearData(){
- if(confirm('Точно удалить все сохранённые данные?')){
- localStorage.removeItem(KEY);location.reload();
- }
+  if(confirm('Точно удалить все сохранённые данные?')){
+    localStorage.removeItem(KEY);
+    location.reload();
+  }
 }
+
 function refresh(){
- let m=data.measurements[data.measurements.length-1];
- ['homeWeight','bodyWeight'].forEach(id=>document.getElementById(id).textContent=m.weight+' кг');
- ['homeWaist','bodyWaist'].forEach(id=>document.getElementById(id).textContent=m.waist+' см');
- document.getElementById('meals').innerHTML=meals.map(x=>
- `<div class="meal"><b>${x[0]}</b><p>${x[1]}</p></div>`).join('');
- document.getElementById('measurements').innerHTML=data.measurements.slice().reverse().map(x=>
- `<p>${x.date} — <b>${x.weight} кг</b> · талия ${x.waist} см</p>`).join('');
- document.getElementById('workoutHistory').innerHTML=data.workouts.map(x=>
- `<div class="meal"><b>${x.date} — тренировка ${x.name}</b><p>${x.items.filter(i=>i.done).length} из ${x.items.length} упражнений выполнено</p></div>`).join('')||'<p>Пока нет тренировок.</p>';
- document.getElementById('shoppingList').innerHTML=data.shopping.map((x,i)=>{
- let name=typeof x==='string'?x:x.name,done=typeof x==='string'?false:x.done;
- return `<div class="check"><input type="checkbox" ${done?'checked':''} onchange="toggleProduct(${i},this.checked)"><span>${name}</span></div>`;
- }).join('');
- document.getElementById('photos').innerHTML=data.photos.map(x=>
- `<div class="meal"><p>${x.date}</p><img class="photo" src="${x.src}"></div>`).join('');
- drawChart();
+  let m=data.measurements[data.measurements.length-1];
+
+  if(m){
+    ['homeWeight','bodyWeight'].forEach(id=>{
+      document.getElementById(id).textContent=m.weight+' кг';
+    });
+
+    ['homeWaist','bodyWaist'].forEach(id=>{
+      document.getElementById(id).textContent=m.waist+' см';
+    });
+  }
+
+  document.getElementById('meals').innerHTML=meals.map(x=>
+    `<div class="meal"><b>${x[0]}</b><p>${x[1]}</p></div>`
+  ).join('');
+
+  document.getElementById('measurements').innerHTML=
+    data.measurements.slice().reverse().map(x=>
+      `<p>${x.date} — <b>${x.weight} кг</b> · талия ${x.waist} см</p>`
+    ).join('');
+
+  document.getElementById('workoutHistory').innerHTML=
+    data.workouts.map(x=>
+      `<div class="meal">
+        <b>${x.date} — тренировка ${x.name}</b>
+        <p>${x.items.filter(i=>i.done).length} из ${x.items.length} упражнений выполнено</p>
+      </div>`
+    ).join('')||'<p>Пока нет тренировок.</p>';
+
+  document.getElementById('shoppingList').innerHTML=
+    data.shopping.map((x,i)=>{
+      let name=typeof x==='string'?x:x.name;
+      let done=typeof x==='string'?false:x.done;
+
+      return `<div class="check">
+        <input type="checkbox" ${done?'checked':''}
+          onchange="toggleProduct(${i},this.checked)">
+        <span>${name}</span>
+      </div>`;
+    }).join('');
+
+  document.getElementById('photos').innerHTML=
+    data.photos.map(x=>
+      `<div class="meal">
+        <p>${x.date}</p>
+        <img class="photo" src="${x.src}">
+      </div>`
+    ).join('');
+
+  drawChart();
 }
+
 function drawChart(){
- let c=document.getElementById('chart'),ctx=c.getContext('2d');
- ctx.clearRect(0,0,c.width,c.height);
- let arr=data.measurements;if(!arr.length)return;
- let vals=arr.map(x=>x.weight),min=Math.min(...vals)-1,max=Math.max(...vals)+1;
- ctx.strokeStyle='#8be0b0';ctx.lineWidth=4;ctx.beginPath();
- vals.forEach((v,i)=>{
- let x=35+(arr.length===1?0:i*(530/(arr.length-1)));
- let y=205-(v-min)/(max-min)*165;
- if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
- ctx.fillStyle='#f3f5f8';ctx.fillText(v+' кг',x-12,y-12);
- });
- ctx.stroke();
+  let c=document.getElementById('chart');
+  let ctx=c.getContext('2d');
+
+  ctx.clearRect(0,0,c.width,c.height);
+
+  let arr=data.measurements;
+  if(!arr.length)return;
+
+  let vals=arr.map(x=>x.weight);
+  let min=Math.min(...vals)-1;
+  let max=Math.max(...vals)+1;
+
+  ctx.strokeStyle='#8be0b0';
+  ctx.lineWidth=4;
+  ctx.beginPath();
+
+  vals.forEach((v,i)=>{
+    let x=35+(arr.length===1?0:i*(530/(arr.length-1)));
+    let y=205-(v-min)/(max-min)*165;
+
+    if(i===0){
+      ctx.moveTo(x,y);
+    }else{
+      ctx.lineTo(x,y);
+    }
+
+    ctx.fillStyle='#f3f5f8';
+    ctx.fillText(v+' кг',x-12,y-12);
+  });
+
+  ctx.stroke();
 }
+
 refresh();
 </script>
+
 </body>
 </html>
