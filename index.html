@@ -51,9 +51,23 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#151d29;
 nav button{background:none;color:var(--muted);padding:7px 3px;
   font-size:10px;flex:1}
 nav button.active{color:var(--accent)}
-.exercise{padding:12px 0;border-bottom:1px solid var(--line)}
+.exercise{padding:15px 0;border-bottom:1px solid var(--line)}
 .exercise:last-child{border:0}
 .exercise input{width:65px;display:inline-block;margin:4px}
+.exercise-photo{
+  display:block;
+  width:100%;
+  max-height:320px;
+  object-fit:contain;
+  background:#111925;
+  border-radius:12px;
+  margin:12px 0;
+}
+.exercise-photo-label{
+  color:var(--muted);
+  font-size:11px;
+  margin-top:8px;
+}
 .meal{padding:11px 0;border-bottom:1px solid var(--line)}
 .meal:last-child{border:0}
 canvas{width:100%;height:190px;background:#111925;border-radius:10px}
@@ -330,17 +344,78 @@ const plans={
  ]
 };
 
+/*
+  Фотографии сопоставлены с упражнениями по названиям,
+  которые пользователь определил при просмотре файлов.
+  Файлы с неподходящими или неоднозначными движениями
+  намеренно не подключены.
+*/
+const exerciseImages={
+  'Жим гантелей лёжа':
+    'A_single_photorealistic_instructional_fitness_photograph__la (4).png',
+
+  'Тяга горизонтального блока':
+    'A_single_photorealistic_instructional_fitness_photograph__la (3).png',
+
+  'Жим ногами':
+    'A_single_photorealistic_instructional_fitness_photograph__la (1).png',
+
+  'Сгибание ног сидя':
+    'A_single_photorealistic_instructional_fitness_photograph__la.png',
+
+  'Планка':
+    'Photorealistic_instructional_gym_photograph__landscape_4_3__ (3).png',
+
+  'Тяга верхнего блока':
+    'Photorealistic_instructional_gym_photograph__landscape_4_3__.png',
+
+  'Жим гантелей сидя':
+    'Photorealistic_instructional_gym_photograph__landscape_4_3__ (13).png',
+
+  'Face pull':
+    'Photorealistic_instructional_gym_photograph__landscape_4_3__ (9).png',
+
+  'Сгибание рук на бицепс':
+    'Photorealistic_instructional_gym_photograph__landscape_4_3__ (12).png',
+
+  'Жим гантелей на наклонной скамье':
+    'Photorealistic_instructional_gym_photograph__landscape_4_3__ (7).png',
+
+  'Гоблет-присед':
+    'Photorealistic_instructional_gym_photograph__landscape_4_3__ (11).png',
+
+  'Ягодичный мост':
+    'Photorealistic_instructional_gym_photograph__landscape_4_3__ (2).png',
+
+  'Разгибание рук на блоке':
+    'Photorealistic_instructional_gym_photograph__landscape_4_3__ (10).png',
+
+  'Подъём на носки':
+    'Photorealistic_instructional_gym_photograph__landscape_4_3__ (8).png'
+};
+
 function loadWorkout(letter){
   let items=plans[letter];
 
   document.getElementById('workoutBox').innerHTML=
     `<h2>Тренировка ${letter}</h2><p>Отмечай выполнение упражнений.</p>`+
-    items.map((x,i)=>`
+    items.map((x,i)=>{
+      const imageFile=exerciseImages[x[0]];
+      const imageHTML=imageFile
+        ? `<img class="exercise-photo"
+             src="assets/${encodeURIComponent(imageFile)}"
+             alt="Техника упражнения: ${escapeHTML(x[0])}"
+             loading="lazy"
+             onerror="this.style.display='none'">`
+        : '';
+
+      return `
       <div class="exercise">
         <div class="row">
           <b>${i+1}. ${x[0]}</b>
           <span class="accent">${x[1]}</span>
         </div>
+        ${imageHTML}
         <label>Рабочий вес (кг)</label>
         <input type="number" id="w${i}" placeholder="кг">
         <label>
@@ -348,7 +423,8 @@ function loadWorkout(letter){
           Выполнено
         </label>
       </div>
-    `).join('')+
+      `;
+    }).join('')+
     `<button onclick="finishWorkout('${letter}')">Завершить тренировку</button>`;
 }
 
@@ -580,65 +656,4 @@ function refresh(){
       `<div class="photo-card">
         <p><b>${x.date}</b></p>
         ${x.note?`<p>${escapeHTML(x.note)}</p>`:''}
-        <img class="photo" src="${x.src}" alt="Фотография прогресса">
-        <div class="photo-actions">
-          <button class="danger small" onclick="deletePhoto(${i})">Удалить фото</button>
-        </div>
-      </div>`
-    ).join('')||'<p>Пока фотографий нет. Добавь первую фотографию, чтобы начать отслеживать изменения.</p>';
-
-  document.getElementById('photoCount').textContent=
-    data.photos.length+' фотографий';
-
-  drawChart();
-}
-
-function escapeHTML(str){
-  return String(str).replace(/[&<>"']/g,char=>({
-    '&':'&amp;',
-    '<':'&lt;',
-    '>':'&gt;',
-    '"':'&quot;',
-    "'":'&#039;'
-  })[char]);
-}
-
-function drawChart(){
-  let c=document.getElementById('chart');
-  let ctx=c.getContext('2d');
-
-  ctx.clearRect(0,0,c.width,c.height);
-
-  let arr=data.measurements;
-  if(!arr.length)return;
-
-  let vals=arr.map(x=>x.weight);
-  let min=Math.min(...vals)-1;
-  let max=Math.max(...vals)+1;
-
-  ctx.strokeStyle='#8be0b0';
-  ctx.lineWidth=4;
-  ctx.beginPath();
-
-  vals.forEach((v,i)=>{
-    let x=35+(arr.length===1?0:i*(530/(arr.length-1)));
-    let y=205-(v-min)/(max-min)*165;
-
-    if(i===0){
-      ctx.moveTo(x,y);
-    }else{
-      ctx.lineTo(x,y);
-    }
-
-    ctx.fillStyle='#f3f5f8';
-    ctx.fillText(v+' кг',x-12,y-12);
-  });
-
-  ctx.stroke();
-}
-
-refresh();
-</script>
-
-</body>
-</html>
+        <img class="photo"
