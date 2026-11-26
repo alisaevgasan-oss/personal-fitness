@@ -57,9 +57,11 @@ nav button.active{color:var(--accent)}
 .meal{padding:11px 0;border-bottom:1px solid var(--line)}
 .meal:last-child{border:0}
 canvas{width:100%;height:190px;background:#111925;border-radius:10px}
-.photo{width:100%;border-radius:10px;margin-top:8px}
+.photo{width:100%;border-radius:10px;margin-top:8px;display:block}
+.photo-card{background:var(--panel2);padding:12px;border-radius:12px;margin:12px 0}
 .check{display:flex;align-items:center;gap:10px;padding:9px 0}
 .check input{width:auto;margin:0}
+.photo-actions{display:flex;justify-content:flex-end;margin-top:10px}
 </style>
 </head>
 <body>
@@ -108,7 +110,7 @@ canvas{width:100%;height:190px;background:#111925;border-radius:10px}
       <button onclick="showPage('training')">Тренировки</button>
       <button onclick="showPage('food')">Питание</button>
       <button class="secondary" onclick="showPage('progress')">Мой прогресс</button>
-      <button class="secondary" onclick="showPage('body')">Параметры тела</button>
+      <button class="secondary" onclick="showPage('body')">Фотодневник</button>
     </div>
   </div>
 </section>
@@ -175,7 +177,10 @@ canvas{width:100%;height:190px;background:#111925;border-radius:10px}
 
 <section class="page" id="body">
   <div class="card">
-    <h2>Параметры тела</h2>
+    <div class="row">
+      <h2>Параметры тела</h2>
+      <button class="secondary small" onclick="showPage('settings')">Назад</button>
+    </div>
     <p>Исходные данные программы</p>
     <div class="grid">
       <div class="stat"><span class="muted">Возраст</span><strong>30 лет</strong></div>
@@ -187,9 +192,18 @@ canvas{width:100%;height:190px;background:#111925;border-radius:10px}
 
   <div class="card">
     <h2>Фотодневник</h2>
-    <p>Добавляй фотографии для сравнения изменений тела.</p>
+    <p>Добавляй фотографии, чтобы отслеживать изменения тела. Рекомендуется фотографироваться в одинаковом освещении и ракурсе.</p>
+
+    <label>Выбери фотографию</label>
     <input type="file" id="photoInput" accept="image/*">
+    <label>Комментарий к фотографии (необязательно)</label>
+    <input type="text" id="photoNote" placeholder="Например: начало программы">
     <button onclick="savePhoto()">Добавить фотографию</button>
+
+    <div class="row" style="margin-top:20px">
+      <h3>Мои фотографии</h3>
+      <span class="muted" id="photoCount">0 фотографий</span>
+    </div>
     <div id="photos"></div>
   </div>
 </section>
@@ -209,10 +223,17 @@ canvas{width:100%;height:190px;background:#111925;border-radius:10px}
   <div class="card">
     <h2>История тренировок</h2>
     <div id="workoutHistory"></div>
+    <button class="secondary" onclick="showPage('training')">Вернуться к тренировкам</button>
   </div>
 </section>
 
 <section class="page" id="settings">
+  <div class="card">
+    <h2>Дополнительные разделы</h2>
+    <p>Управление параметрами тела и фотографиями.</p>
+    <button onclick="showPage('body')">Параметры тела и фотодневник</button>
+  </div>
+
   <div class="card">
     <h2>Данные приложения</h2>
     <p>Информация хранится локально в браузере этого устройства.</p>
@@ -253,7 +274,13 @@ let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
 };
 
 function save(){
-  localStorage.setItem(KEY,JSON.stringify(data));
+  try{
+    localStorage.setItem(KEY,JSON.stringify(data));
+    return true;
+  }catch(error){
+    alert('Не удалось сохранить данные. Возможно, память браузера заполнена. Экспортируй данные приложения и освободи место.');
+    return false;
+  }
 }
 
 function showPage(id,btn){
@@ -264,13 +291,14 @@ function showPage(id,btn){
 
   if(btn){
     btn.classList.add('active');
-  } else {
+  }else{
     const navButton=[...document.querySelectorAll('nav button')]
       .find(b=>b.getAttribute('onclick').includes("'" + id + "'"));
     if(navButton)navButton.classList.add('active');
   }
 
   refresh();
+  window.scrollTo(0,0);
 }
 
 const plans={
@@ -340,7 +368,7 @@ function finishWorkout(letter){
   });
 
   data.workouts.unshift(result);
-  save();
+  if(!save())return;
   refresh();
   alert('Тренировка сохранена');
 }
@@ -361,7 +389,7 @@ function saveFood(){
     carbs:val('carbs')
   };
 
-  save();
+  if(!save())return;
   document.getElementById('foodStatus').textContent='Показатели сохранены.';
 }
 
@@ -384,8 +412,10 @@ function saveMeasurement(){
     waist
   });
 
-  save();
+  if(!save())return;
   refresh();
+  document.getElementById('weight').value='';
+  document.getElementById('waist').value='';
 }
 
 function addProduct(){
@@ -393,7 +423,7 @@ function addProduct(){
   if(!p)return;
 
   data.shopping.push(p);
-  save();
+  if(!save())return;
   document.getElementById('newProduct').value='';
   refresh();
 }
@@ -417,6 +447,11 @@ function savePhoto(){
     return;
   }
 
+  if(!file.type.startsWith('image/')){
+    alert('Выбери файл изображения');
+    return;
+  }
+
   let reader=new FileReader();
 
   reader.onload=()=>{
@@ -424,26 +459,57 @@ function savePhoto(){
 
     img.onload=()=>{
       let c=document.createElement('canvas');
-      let scale=Math.min(1,900/img.width);
+      let scale=Math.min(1,800/img.width);
 
-      c.width=img.width*scale;
-      c.height=img.height*scale;
+      c.width=Math.round(img.width*scale);
+      c.height=Math.round(img.height*scale);
 
       c.getContext('2d').drawImage(img,0,0,c.width,c.height);
 
-      data.photos.unshift({
+      let photo={
         date:new Date().toLocaleDateString('ru-RU'),
-        src:c.toDataURL('image/jpeg',.65)
-      });
+        note:val('photoNote').trim(),
+        src:c.toDataURL('image/jpeg',.6)
+      };
 
-      save();
+      data.photos.unshift(photo);
+
+      if(!save()){
+        data.photos.shift();
+        return;
+      }
+
+      document.getElementById('photoInput').value='';
+      document.getElementById('photoNote').value='';
       refresh();
+      alert('Фотография сохранена');
+    };
+
+    img.onerror=()=>{
+      alert('Не удалось обработать фотографию. Попробуй другое изображение.');
     };
 
     img.src=reader.result;
   };
 
+  reader.onerror=()=>{
+    alert('Не удалось прочитать файл фотографии.');
+  };
+
   reader.readAsDataURL(file);
+}
+
+function deletePhoto(index){
+  if(!confirm('Удалить эту фотографию из фотодневника?'))return;
+
+  let removed=data.photos.splice(index,1)[0];
+
+  if(!save()){
+    data.photos.splice(index,0,removed);
+    return;
+  }
+
+  refresh();
 }
 
 function exportData(){
@@ -457,7 +523,7 @@ function exportData(){
   a.download='personal-fitness-backup.json';
   a.click();
 
-  URL.revokeObjectURL(a.href);
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 
 function clearData(){
@@ -510,14 +576,31 @@ function refresh(){
     }).join('');
 
   document.getElementById('photos').innerHTML=
-    data.photos.map(x=>
-      `<div class="meal">
-        <p>${x.date}</p>
-        <img class="photo" src="${x.src}">
+    data.photos.map((x,i)=>
+      `<div class="photo-card">
+        <p><b>${x.date}</b></p>
+        ${x.note?`<p>${escapeHTML(x.note)}</p>`:''}
+        <img class="photo" src="${x.src}" alt="Фотография прогресса">
+        <div class="photo-actions">
+          <button class="danger small" onclick="deletePhoto(${i})">Удалить фото</button>
+        </div>
       </div>`
-    ).join('');
+    ).join('')||'<p>Пока фотографий нет. Добавь первую фотографию, чтобы начать отслеживать изменения.</p>';
+
+  document.getElementById('photoCount').textContent=
+    data.photos.length+' фотографий';
 
   drawChart();
+}
+
+function escapeHTML(str){
+  return String(str).replace(/[&<>"']/g,char=>({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#039;'
+  })[char]);
 }
 
 function drawChart(){
